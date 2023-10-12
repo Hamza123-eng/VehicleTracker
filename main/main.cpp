@@ -1,25 +1,23 @@
 
 /*
- * ESP-IDF C++ Template with FreeRTOS Addon
+ * I2C Component for ESP-IDF with FreeRTOS Addon
  *
- * This project serves as a starting point for ESP32 development with ESP-IDF,
- * incorporating C++ features and a FreeRTOS addon for real-time multitasking.
- * The main application demonstrates how to use the `LedBlink` class to control
- * an LED on pin 2, utilizing an active-low input state.
+ * This component extends ESP32 development using ESP-IDF, incorporating C++ features and a FreeRTOS addon for multitasking.
+ * It leverages the I2C ESP driver and provides a user-friendly interface to send commands to I2C devices.
+ * The default constructor sets the SCL and SDA pins to their defaults if not specified by the user.
+ * Users can then send desired commands to the I2C component, which are routed to the I2C HAL driver.
+ * In the provided example, we demonstrate the usage of this component with an FRAM device, showcasing a write transaction
+ * followed by a read transaction.
  *
  * Author: Hamza Islam
  * Organization: Epteck
  *
- * For more details, please refer to the README.md file and project documentation.
+ * For more information and usage details, please refer to the README.md file and project documentation.
  *
  * License: MIT (See LICENSE file for details)
  */
-
 #include <stdio.h>
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
 
-#include "led.hpp"
 #include "i2c.hpp"
 
 #define PREPARE_FRAM_ADDR(reg_write_addr, write_addr)       \
@@ -31,10 +29,8 @@
 
 #define TEST_ADDR 0x0001
 
-ledBlink *myLed;
-
- std::vector<I2cCommandType> framReadCmd{START, WRITE, DATA, START, READ, DATA, STOP};
- std::vector<I2cCommandType> framWriteCmd{START, WRITE, DATA, STOP};
+std::vector<I2cCommandType> framReadCmd{START, WRITE, DATA, START, READ, DATA, STOP};
+std::vector<I2cCommandType> framWriteCmd{START, WRITE, DATA, STOP};
 
 extern "C" void app_main(void)
 {
@@ -67,6 +63,8 @@ extern "C" void app_main(void)
 
         i2cdrv.ExecuteCommand(framCmd, 0x50);
 
-        printf("Recevied Byte %X ,  %X\n", readData[0], readData[1]);
+        printf("Recevied: Byte[0]  %X   Byte[1]   %X\n", readData[0], readData[1]);
+
+        i2cdrv.ReleaseBus();
     }
 }

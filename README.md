@@ -1,27 +1,44 @@
-# ESP-IDF C++ Template with FreeRTOS Addon
+# I2C C++ Driver for ESP32
+
+This C++ I2C driver is designed for ESP32 microcontrollers and provides thread-safe communication over I2C using a binary semaphore mechanism. It includes generic command execution functions, allowing users to send various I2C commands in a START-STOP-DATA format.
+
+## Table of Contents
+
+- [Introduction](#introduction)
+- [Features](#features)
+- [Usage](#usage)
+- [Installation](#installation)
+- [Examples](#examples)
+- [Contributing](#contributing)
+- [License](#license)
+- [Contact](#contact)
 
 ## Introduction
 
-This project provides a C++ template for ESP-IDF (Espressif IoT Development Framework) with an added FreeRTOS (Real-Time Operating System) addon. It includes a LED and GPIO class for easy hardware interaction. Additionally, there's an example application demonstrating how to blink an LED using the GPIO class and FreeRTOS threads.
+This I2C driver is tailored for ESP32 microcontrollers and facilitates seamless I2C communication with slave devices. It ensures thread safety by utilizing a binary semaphore mechanism, enabling multiple applications to send data over I2C concurrently without conflicts.
 
-## Author
+## Features
 
-- **Name:** Hamza Islam
-- **Organization:** Epteck
+- Thread-safe I2C communication using binary semaphore.
+- Support for generic command execution (START-STOP-DATA format).
+- Functionality to set the slave address.
+- Default values set for maximum efficiency.
 
-## Getting Started
+## Usage
 
-### Prerequisites
+To use this I2C driver in your ESP32 project:
 
-- Install ESP-IDF: Follow the [ESP-IDF Installation Guide](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/index.html) to set up the ESP-IDF development environment.
+1. Clone or download the driver from the repository.
+2. Integrate the driver into the 'components' folder of your ESP32 project.
+3. Utilize the provided functions to send I2C commands and communicate with the slave devices.
 
-### Clone the Repository
+## Installation
 
-Clone this repository to your local development environment:
+To integrate this I2C driver into your ESP32 project, follow these steps:
+
+1. Clone the repository to your local machine:
 
 ```bash
-git clone https://gitlab.com/epteck-pk/ept-teams/digital-bravo/ept-products/ept-libs/esp-idf/idf-cpp-template.git
-cd idf-cpp-template
-idf.py build
-idf.py flash monitor
+git clone https://gitlab.com/epteck-pk/ept-teams/digital-bravo/ept-products/ept-libs/esp-idf/idf-cpp-template.git -b component/i2c
+
 ```
