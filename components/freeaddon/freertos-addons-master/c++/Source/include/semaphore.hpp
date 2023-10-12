@@ -36,7 +36,6 @@
  *
  ***************************************************************************/
 
-
 #ifndef SEMAPHORE_HPP_
 #define SEMAPHORE_HPP_
 
@@ -44,7 +43,7 @@
  *  C++ exceptions are used by default when constructors fail.
  *  If you do not want this behavior, define the following in your makefile
  *  or project. Note that in most / all cases when a constructor fails,
- *  it's a fatal error. In the cases when you've defined this, the new 
+ *  it's a fatal error. In the cases when you've defined this, the new
  *  default behavior will be to issue a configASSERT() instead.
  */
 #ifndef CPP_FREERTOS_NO_EXCEPTIONS
@@ -58,15 +57,15 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
 
-
-namespace cpp_freertos {
-
+namespace cpp_freertos
+{
 
 #ifndef CPP_FREERTOS_NO_EXCEPTIONS
-/**
- *  This is the exception that is thrown if a Semaphore constructor fails.
- */
-class SemaphoreCreateException : public std::exception {
+    /**
+     *  This is the exception that is thrown if a Semaphore constructor fails.
+     */
+    class SemaphoreCreateException : public std::exception
+    {
 
     public:
         /**
@@ -83,7 +82,7 @@ class SemaphoreCreateException : public std::exception {
         explicit SemaphoreCreateException(const char *info)
         {
             snprintf(errorString, sizeof(errorString),
-                        "Semaphore Constructor Failed %s", info);
+                     "Semaphore Constructor Failed %s", info);
         }
 
         /**
@@ -100,29 +99,29 @@ class SemaphoreCreateException : public std::exception {
          *  A text string representing what failed.
          */
         char errorString[80];
-};
+    };
 #endif
 
+    /**
+     *
+     *  Base wrapper class around FreeRTOS's implementation of semaphores.
+     *
+     *  It is not expected that an application will derive from this class.
+     *
+     *  Note that we distinguish between Semaphore, Binary Semaphores,
+     *  Counting Semaphores, and Mutexes. Mutexes, while implemented as a kind
+     *  of semaphore in FreeRTOS, are conceptually very different in use and
+     *  behavior from semaphores. We acknowledge this difference in the class
+     *  heirarchy, implementing mutextes as a completely different class heirarchy.
+     */
+    class Semaphore
+    {
 
-/**
- *
- *  Base wrapper class around FreeRTOS's implementation of semaphores.
- *
- *  It is not expected that an application will derive from this class.
- *
- *  Note that we distinguish between Semaphore, Binary Semaphores,
- *  Counting Semaphores, and Mutexes. Mutexes, while implemented as a kind
- *  of semaphore in FreeRTOS, are conceptually very different in use and
- *  behavior from semaphores. We acknowledge this difference in the class
- *  heirarchy, implementing mutextes as a completely different class heirarchy.
- */
-class Semaphore {
-
-    /////////////////////////////////////////////////////////////////////////
-    //
-    //  Public API
-    //
-    /////////////////////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////////////////////
+        //
+        //  Public API
+        //
+        /////////////////////////////////////////////////////////////////////////
     public:
         /**
          *  Aquire (take) a semaphore.
@@ -168,12 +167,12 @@ class Semaphore {
          */
         virtual ~Semaphore();
 
-    /////////////////////////////////////////////////////////////////////////
-    //
-    //  Protected API
-    //  Not intended for use by application code.
-    //
-    /////////////////////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////////////////////
+        //
+        //  Protected API
+        //  Not intended for use by application code.
+        //
+        /////////////////////////////////////////////////////////////////////////
     protected:
         /**
          *  FreeRTOS semaphore handle.
@@ -185,19 +184,19 @@ class Semaphore {
          *  directly created, this is a base class only.
          */
         Semaphore();
-};
+    };
 
+    /**
+     *  Wrapper class for Binary Semaphores.
+     */
+    class BinarySemaphore : public Semaphore
+    {
 
-/**
- *  Wrapper class for Binary Semaphores.
- */
-class BinarySemaphore : public Semaphore {
-
-    /////////////////////////////////////////////////////////////////////////
-    //
-    //  Public API
-    //
-    /////////////////////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////////////////////
+        //
+        //  Public API
+        //
+        /////////////////////////////////////////////////////////////////////////
     public:
         /**
          *  Constructor to create a binary semaphore.
@@ -207,19 +206,19 @@ class BinarySemaphore : public Semaphore {
          *  @return Instance of a BinarySemaphore.
          */
         explicit BinarySemaphore(bool set = false);
-};
+    };
 
+    /**
+     *  Wrapper class for Counting Semaphores.
+     */
+    class CountingSemaphore : public Semaphore
+    {
 
-/**
- *  Wrapper class for Counting Semaphores.
- */
-class CountingSemaphore : public Semaphore {
-
-    /////////////////////////////////////////////////////////////////////////
-    //
-    //  Public API
-    //
-    /////////////////////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////////////////////
+        //
+        //  Public API
+        //
+        /////////////////////////////////////////////////////////////////////////
     public:
         /**
          *  Constructor to create a counting semaphore.
@@ -231,8 +230,7 @@ class CountingSemaphore : public Semaphore {
          *  @return Instance of a CountingSemaphore.
          */
         CountingSemaphore(UBaseType_t maxCount, UBaseType_t initialCount);
-};
-
+    };
 
 }
 #endif

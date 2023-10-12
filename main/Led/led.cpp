@@ -17,7 +17,29 @@
  */
 void ledBlink::ledStart()
 {
-    this->Start();
+    running_ = true;
+}
+/**
+ * @brief
+ *
+ */
+void ledBlink::blinkIterate(uint16_t &ontime, uint16_t &offtime, operationMode &mode)
+{
+    led_gpio.set(mode);
+    DelayMS(ontime);
+    led_gpio.set(!mode);
+    DelayMS(offtime);
+}
+/**
+ * @brief
+ *
+ * @param ontime
+ * @param offtime
+ * @param mode
+ */
+void ledBlink::ledStop()
+{
+    running_ = false;
 }
 /**
  * @brief
@@ -27,26 +49,77 @@ void ledBlink::Run()
 {
     while (1)
     {
-        led_gpio.set(false);
-        mode_ == ACTIVE_LOW ? DelayMS(on_time_) : DelayMS(off_time_);
-        led_gpio.set(true);
-        mode_ != ACTIVE_LOW ? DelayMS(on_time_) : DelayMS(off_time_);
+        if (running_)
+        {
+            switch (TYPE_)
+            {
+            case NONE:
+                led_gpio.set(mode_);
+                /* code */
+                break;
+            case EQUAL:
+                blinkIterate(on_time_s, on_time_s, mode_);
+                /* code */
+                break;
+            case UNEQUAL:
+                blinkIterate(on_time_s, off_time_ms, mode_);
+                /* code */
+                break;
+            case MULTIPLE_SHOT:
+                for (uint8_t i = 0; i < shot_num_m; i++)
+                {
+                    blinkIterate(on_time_m, off_time_m, mode_);
+                }
+                DelayMS(off_time_ms);
+                /* code */
+                break;
+            default:
+                led_gpio.set(mode_);
+                break;
+            }
+        }
+        else
+        {
+            led_gpio.set(!mode_);
+            DelayMS(1000);
+        }
     }
 }
+
 /**
  * @brief
  *
- * @param value
+ * @param ontime
  */
-void ledBlink::setOnTime(uint16_t value)
+void ledBlink::setEqualLedMode(uint16_t ontime)
 {
-    on_time_ = value;
+    TYPE_ = EQUAL;
+    on_time_s = ontime;
 }
 /**
  * @brief
  *
+ * @param ontime
+ * @param offtime
  */
-void ledBlink::ledOffTime(uint16_t value)
+void ledBlink::setUnEqualLedMode(uint16_t ontime, uint16_t offtime)
 {
-    off_time_ = value;
+    TYPE_ = UNEQUAL;
+    on_time_s = ontime;
+    off_time_ms = offtime;
+}
+/**
+ * @brief
+ *
+ * @param shot
+ * @param ontime
+ * @param offtime
+ */
+void ledBlink::setMultiLedMode(uint16_t shot, uint16_t ontime, uint16_t offtime, uint16_t offtime_major)
+{
+    TYPE_ = MULTIPLE_SHOT;
+    shot_num_m = shot;
+    off_time_ms = offtime_major;
+    on_time_m = ontime;
+    off_time_m = offtime;
 }
