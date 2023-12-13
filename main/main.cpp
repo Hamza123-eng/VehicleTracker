@@ -17,54 +17,88 @@
  * License: MIT (See LICENSE file for details)
  */
 #include <stdio.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 
-#include "i2c.hpp"
+#include <mpu.hpp>
 
-#define PREPARE_FRAM_ADDR(reg_write_addr, write_addr)       \
-    do                                                      \
-    {                                                       \
-        (write_addr)[0] = (((reg_write_addr) >> 8) & 0x1F); \
-        (write_addr)[1] = (reg_write_addr)&0xFF;            \
-    } while (0)
 
-#define TEST_ADDR 0x0001
+MPU6050 mpu;
 
-std::vector<I2cCommandType> framReadCmd{START, WRITE, DATA, START, READ, DATA, STOP};
-std::vector<I2cCommandType> framWriteCmd{START, WRITE, DATA, STOP};
+void checkSettings()
+{
+  
+ printf(" * Sleep Mode:            ");
+ printf(mpu.getSleepEnabled() ? "Enabled \n" : "Disabled \n");
+  
+ printf(" * Clock Source:          ");
+  switch(mpu.getClockSource())
+  {
+    case MPU6050_CLOCK_KEEP_RESET:    printf("Stops the clock and keeps the timing generator in reset \n"); break;
+    case MPU6050_CLOCK_EXTERNAL_19MHZ:printf("PLL with external 19.2MHz reference \n"); break;
+    case MPU6050_CLOCK_EXTERNAL_32KHZ:printf("PLL with external 32.768kHz reference \n"); break;
+    case MPU6050_CLOCK_PLL_ZGYRO:     printf("PLL with Z axis gyroscope reference \n"); break;
+    case MPU6050_CLOCK_PLL_YGYRO:     printf("PLL with Y axis gyroscope reference \n"); break;
+    case MPU6050_CLOCK_PLL_XGYRO:     printf("PLL with X axis gyroscope reference \n"); break;
+    case MPU6050_CLOCK_INTERNAL_8MHZ: printf("Internal 8MHz oscillator \n"); break;
+  }
+  
+ printf(" * Accelerometer:         ");
+  switch(mpu.getRange())
+  {
+    case MPU6050_RANGE_16G:           printf("+/- 16 g\n"); break;
+    case MPU6050_RANGE_8G:            printf("+/- 8 g\n"); break;
+    case MPU6050_RANGE_4G:            printf("+/- 4 g\n"); break;
+    case MPU6050_RANGE_2G:            printf("+/- 2 g\n"); break;
+  }  
+
+ printf(" * Accelerometer offsets X: %d ",mpu.getAccelOffsetX());
+ printf(" * Accelerometer offsets Y: %d ",mpu.getAccelOffsetY());
+ printf(" * Accelerometer offsets Z: %d ",mpu.getAccelOffsetZ());
+
+}
+
+void setup() 
+{
+  
+  printf("Initialize MPU6050...\n");
+
+  while(!mpu.begin(MPU6050_SCALE_2000DPS, MPU6050_RANGE_2G))
+  {
+   printf("Could not find a valid MPU6050 sensor, check wiring!\n");
+    vTaskDelay(10 / portTICK_PERIOD_MS);
+  }
+
+  // If you want, you can set accelerometer offsets
+  // mpu.setAccelOffsetX();
+  // mpu.setAccelOffsetY();
+  // mpu.setAccelOffsetZ();
+  
+  checkSettings();
+}
 
 extern "C" void app_main(void)
 {
 
-    I2cDriver i2cdrv;
+setup();
 
-    I2cCommand framCmd(framWriteCmd);
+while(1)
+{
+  Vector rawAccel = mpu.readRawAccel();
+  Vector normAccel = mpu.readNormalizeAccel();
 
-    uint8_t writeData[4] = {0x00, 0x00, 0x11, 0x22};
-    uint8_t readData[2] = {0x00};
+ printf(" Xraw = %.3f \n" ,rawAccel.XAxis);
+ printf(" Yraw = %.3f \n" ,rawAccel.YAxis);
+ printf(" Zraw = %.3f \n" ,rawAccel.ZAxis);
 
-    PREPARE_FRAM_ADDR(TEST_ADDR, writeData);
+ printf(" Xnorm = %.3f \n" ,normAccel.XAxis);
+ printf(" Ynorm = %.3f \n" ,normAccel.XAxis);
+ printf(" Znorm = %.3f \n" ,normAccel.XAxis);
 
-    if (i2cdrv.TakeBus())
-    {
-        //** Write tranction
+ vTaskDelay(10 / portTICK_PERIOD_MS);
 
-        framCmd.writeBuff = writeData;
-        framCmd.writeLength = 4;
+}
+ 
 
-        i2cdrv.ExecuteCommand(framCmd, 0x50);
 
-        //** read Transction here
-
-        framCmd.commandParam = framReadCmd;
-        framCmd.writeBuff = writeData;
-        framCmd.writeLength = 2;
-        framCmd.readBuff = readData;
-        framCmd.readLength = 2;
-
-        i2cdrv.ExecuteCommand(framCmd, 0x50);
-
-        printf("Recevied: Byte[0]  %X   Byte[1]   %X\n", readData[0], readData[1]);
-
-        i2cdrv.ReleaseBus();
-    }
 }

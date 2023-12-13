@@ -9,6 +9,8 @@
  *
  */
 #include "i2c.hpp"
+#include "driver/i2c.h"
+#include "driver/gpio.h"
 
 bool I2cDriver::TakeBus()
 {
